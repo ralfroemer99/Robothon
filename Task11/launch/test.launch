@@ -1,0 +1,12 @@
+<!--launch>
+    <include file="$(find franka_gazebo)/launch/panda.launch">
+    <node name="self_collision_detector" pkg="team_a" type="self_collision_detector.py">
+</launch-->
+<launch>
+  <!--param name="robot_description" command="$(find xacro)/xacro '$(find franka_description)/robots/panda_arm.urdf.xacro' hand:=true"/-->
+  <!--param name="robot_description" textfile="$(find franka_description)/robots/panda_arm.urdf"/-->
+  <!--include file="$(find panda_moveit_config)/launch/planning_context.launch"/-->
+  <include file="$(find panda_moveit_config)/launch/demo.launch"/>
+  <node name="collision_detector" pkg="team_a" type="cd" respawn="false" output="screen"/>
+
+</launch>

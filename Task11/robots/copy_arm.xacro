@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="panda">
+    <xacro:macro name="arm" params="name tip_link">
+        <!--GROUPS: Representation of a set of joints and links. This can be useful for specifying DOF to plan for, defining arms, end effectors, etc-->
+        <!--LINKS: When a link is specified, the parent joint of that link (if it exists) is automatically included-->
+        <!--JOINTS: When a joint is specified, the child link of that joint (which will always exist) is automatically included-->
+        <!--CHAINS: When a chain is specified, all the links along the chain (including endpoints) are included in the group. Additionally, all the joints that are parents to included links are also included. This means that joints along the chain and the parent joint of the base link are included in the group-->
+        <!--SUBGROUPS: Groups can also be formed by referencing to already defined group names-->
+        <group name="${name}">
+            <chain base_link="panda_link0" tip_link="${tip_link}" />
+        </group>
+        <!--GROUP STATES: Purpose: Define a named state for a particular group, in terms of joint values. This is useful to define states like 'folded arms'-->
+        <group_state name="ready" group="${name}">
+            <joint name="panda_joint1" value="0" />
+            <joint name="panda_joint2" value="${-pi/4}" />
+            <joint name="panda_joint3" value="0" />
+            <joint name="panda_joint4" value="${-3*pi/4}" />
+            <joint name="panda_joint5" value="0" />
+            <joint name="panda_joint6" value="${pi/2}" />
+            <joint name="panda_joint7" value="${pi/4}" />
+        </group_state>
+        <group_state name="extended" group="${name}">
+            <joint name="panda_joint1" value="0" />
+            <joint name="panda_joint2" value="0" />
+            <joint name="panda_joint3" value="0" />
+            <joint name="panda_joint4" value="-0.1" />
+            <joint name="panda_joint5" value="0" />
+            <joint name="panda_joint6" value="${pi}" />
+            <joint name="panda_joint7" value="${pi/4}" />
+        </group_state>
+    </xacro:macro>
+
+    <!--VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot)-->
+    <virtual_joint name="virtual_joint" type="fixed" parent_frame="world" child_link="panda_link0" />
+
+    <xacro:macro name="collision" params="link">
+        <!-- Enable (environmental) collisions of ${link} -->
+        <disable_default_collisions link="${link}" />
+        <!-- Disable collisions of link with any other arm link, as these are handled by the "sc" links -->
+        <disable_collisions link1="${link}" link2="panda_link0" reason="Default" />
+        <disable_collisions link1="${link}" link2="panda_link1" reason="Default" />
+        <disable_collisions link1="${link}" link2="panda_link2" reason="Default" />
+        <disable_collisions link1="${link}" link2="panda_link3" reason="Default" />
+        <disable_collisions link1="${link}" link2="panda_link4" reason="Default" />
+        <disable_collisions link1="${link}" link2="panda_link5" reason="Default" />
+        <disable_collisions link1="${link}" link2="panda_link6" reason="Default" />
+        <disable_collisions link1="${link}" link2="panda_link7" reason="Default" />
+        <disable_collisions link1="${link}" link2="panda_link8" reason="Default" />
+    </xacro:macro>
+    <xacro:collision link="panda_link0"/>
+    <enable_collisions link1="panda_link0" link2="panda_link5" />
+    <enable_collisions link1="panda_link0" link2="panda_link6" />
+    <enable_collisions link1="panda_link0" link2="panda_link7" />
+    <enable_collisions link1="panda_link0" link2="panda_link8" />
+    <xacro:collision link="panda_link1" />
+    <enable_collisions link1="panda_link1" link2="panda_link5" />
+    <enable_collisions link1="panda_link1" link2="panda_link6" />
+    <enable_collisions link1="panda_link1" link2="panda_link7" />
+    <enable_collisions link1="panda_link1" link2="panda_link8" />
+    <xacro:collision link="panda_link2" />
+    <enable_collisions link1="panda_link2" link2="panda_link5" />
+    <enable_collisions link1="panda_link2" link2="panda_link6" />
+    <enable_collisions link1="panda_link2" link2="panda_link7" />
+    <enable_collisions link1="panda_link2" link2="panda_link8" />
+    <xacro:collision link="panda_link3" />
+    <enable_collisions link1="panda_link3" link2="panda_link7" />
+    <enable_collisions link1="panda_link3" link2="panda_link8" />
+    <xacro:collision link="panda_link4" />
+    <xacro:collision link="panda_link5" />
+    <xacro:collision link="panda_link6" />
+    <xacro:collision link="panda_link7" />
+    <xacro:collision link="panda_link8" />
+</robot>

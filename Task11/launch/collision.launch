@@ -1,0 +1,8 @@
+<launch>
+  <!-- send Panda urdf to parameter server -->
+  <include file="$(find panda_moveit_config)/launch/demo.launch"/>
+
+  <node name="tuts" pkg="team_a" type="tutc" respawn="false" output="screen">
+    <rosparam command="load" file="$(find panda_moveit_config)/config/kinematics.yaml"/>
+  </node>
+</launch>

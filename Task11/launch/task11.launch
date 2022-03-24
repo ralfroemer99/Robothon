@@ -1,0 +1,36 @@
+<launch>
+  <!-- send Panda urdf to parameter server -->
+  <!--include file="$(find panda_moveit_config)/launch/demo.launch"/-->
+  <!--param name="robot_description" command="$(find xacro)/xacro '$(find t11)/robots/panda_arm_hand.urdf.xacro'" /-->
+  <param name="robot_description" command="cat $(find t11)/robots/panda_arm.urdf"/>
+  <param name="robot_description_semantic" command="cat $(find t11)/robots/copy_panda.srdf"/>
+  <arg name="use_rviz" default="true" />
+  <!-- Use rviz config for MoveIt tutorial -->
+  <arg name="rviz_tutorial" default="false" />
+  <!-- By default, we are not in debug mode -->
+  <arg name="debug" default="false" />
+  <arg name="use_gui" default="true" />
+  <!--arg name="rvizconfig" default="$(find panda_moveit_config)/launch/moveit.rviz"/-->
+  <arg name="rvizconfig" default="$(find t11)/launch/config.rviz"/>
+
+  <!--include file="$(find panda_moveit_config)/launch/planning_context.launch"/-->
+
+
+
+  <!--node name="joint_state_publisher" type="joint_state_publisher" pkg="joint_state_publisher" output="screen" >
+    <param name="/use_gui" value="$(arg use_gui)"/>
+  </node-->
+  <node name="robot_state_publisher" type="robot_state_publisher" pkg="robot_state_publisher" output="screen" />
+
+  <!--include file="$(find panda_moveit_config)/launch/moveit_rviz.launch" if="$(arg use_rviz)">
+    <arg name="rviz_tutorial" value="$(arg rviz_tutorial)"/>
+    <arg name="rviz_config" value="$(dirname)/moveit.rviz"/>
+    <arg name="debug" value="$(arg debug)"/>
+  </include-->
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
+
+  <node name="task_11" pkg="t11" type="t11" respawn="false" output="screen">
+    <rosparam command="load" file="$(find panda_moveit_config)/config/kinematics.yaml"/>
+  </node>
+</launch>

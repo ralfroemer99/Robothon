@@ -1,0 +1,18 @@
+The dimensions and poses of the 4 boxes as following,
+
+        box1_pose = [0.20, 0.50, 0.25, 0, 0, 0, 1]
+        box1_dimensions = [0.2, 0.2, 0.5]
+
+        box2_pose = [-0.55, -0.55, 0, 0, 0, 0, 1]
+        box2_dimensions = [0.25, 0.25, 1.75]
+
+        box3_pose = [0.5, -0.55, 0.14, 0, 0, 0, 1]
+        box3_dimensions = [0.28, 0.28, 0.22]
+
+        box4_pose = [-0.4, 0.4, 0.5, 0, 0, 0, 1]
+        box4_dimensions = [0.25, 0.25, 1.1]
+
+pose[0] = x, pose[1] = y, pose[2] = z
+dimensions [0] = dim_x, dimensions_[1] = dim_y, dimensions_[3] = dim_z
+
+The center position of the cylinder is located at [0.15, 0.725, 0.2] with dimension of r=0.01, h=0.06
