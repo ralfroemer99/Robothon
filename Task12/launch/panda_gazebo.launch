@@ -1,0 +1,121 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- Gazebo & GUI Configuration -->
+  <arg name="headless"    default="false" />
+  <arg name="paused"      default="false" />
+  <arg name="world"       default="worlds/empty.world" />
+  <arg name="rviz"        default="true" />
+
+  <!-- Robot Customization -->
+  <arg name="arm_id"      default="panda" doc="Name of the panda robot to spawn" />
+  <arg name="use_gripper" default="true"  doc="Should a franka hand be mounted on the flange?" />
+  <arg name="x"           default="0"     doc="How far forward to place the base of the robot in [m]?" />
+  <arg name="y"           default="0"     doc="How far leftwards to place the base of the robot in [m]?" />
+  <arg name="z"           default="0"     doc="How far upwards to place the base of the robot in [m]?" />
+  <arg name="roll"        default="0"     doc="How much to rotate the base of the robot around its X-axis in [rad]?" />
+  <arg name="pitch"       default="0"     doc="How much to rotate the base of the robot around its Y-axis in [rad]?" />
+  <arg name="yaw"         default="0"     doc="How much to rotate the base of the robot around its Z-axis in [rad]?" />
+  <arg name="initial_joint_positions"
+       doc="Initial joint configuration of the panda. Specify as a list of name/value pairs in form of '-J [name-of-joint] [value-in-rad]'. Default is a 90 degree bend in the elbow"
+       default="-J $(arg arm_id)_joint1 0
+                -J $(arg arm_id)_joint2 0
+                -J $(arg arm_id)_joint3 0
+                -J $(arg arm_id)_joint4 -1.57079632679
+                -J $(arg arm_id)_joint5 0
+                -J $(arg arm_id)_joint6 1.57079632679
+                -J $(arg arm_id)_joint7 0.785398163397"
+       />
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(arg world)"/>
+    <arg name="paused" value="true"/>
+    <arg name="gui" value="$(eval not arg('headless'))"/>
+    <arg name="use_sim_time" value="true"/>
+  </include>
+
+  <group ns="$(arg arm_id)">
+    <param name="robot_description"
+            command="xacro $(find franka_description)/robots/panda_arm.urdf.xacro
+                    gazebo:=true
+                    hand:=$(arg use_gripper)
+                    arm_id:=$(arg arm_id)
+                    xyz:='$(arg x) $(arg y) $(arg z)'
+                    rpy:='$(arg roll) $(arg pitch) $(arg yaw)'">
+    </param>
+
+    <!--
+    <rosparam file="$(find franka_gazebo)/config/franka_hw_sim.yaml" subst_value="true" />
+    <rosparam file="$(find franka_gazebo)/config/sim_controllers.yaml" subst_value="true" />
+    -->
+
+    <node name="$(arg arm_id)_model_spawner"
+            pkg="gazebo_ros"
+            type="spawn_model"
+            if="$(arg paused)"
+            args="-param robot_description -urdf -model $(arg arm_id)
+                $(arg initial_joint_positions)
+                ">
+    </node>
+    <node name="$(arg arm_id)_model_spawner"
+            pkg="gazebo_ros"
+            type="spawn_model"
+            unless="$(arg paused)"
+            args="-param robot_description -urdf -model $(arg arm_id) -unpause
+                $(arg initial_joint_positions)
+                ">
+    </node>
+
+    <rosparam file="$(find Task12)/config/ros_controllers.yaml" command="load" />
+
+
+    <!-- Spawn required ROS controllers -->
+    <node pkg="controller_manager"
+            type="spawner"
+            name="$(arg arm_id)_gripper_spawner"
+            if="$(arg use_gripper)"
+            args="panda_hand_controller"
+            respawn="false"
+    />
+
+    <node pkg="controller_manager"
+            type="spawner"
+            name="$(arg arm_id)_controller_spawner"
+            respawn="false" output="screen"
+            args="joint_state_controller panda_arm_controller"
+    />
+    
+    <node name="joint_state_publisher" type="joint_state_publisher" pkg="joint_state_publisher">
+        <rosparam param="source_list">[panda_arm_controller/joint_states, panda_hand_controller/joint_states] </rosparam>
+        <rosparam param="source_list">[franka_state_controller/joint_states, franka_gripper/joint_states] </rosparam> 
+        <param name="rate" value="30"/>
+        <rosparam param="source_list">[move_group/fake_controller_joint_states]</rosparam>
+    </node>
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen" />
+    
+    <!-- Load the URDF, SRDF and other .yaml configuration files on the param server -->
+    <include file="$(find Task12)/launch/planning_context.launch">
+        <arg name="load_robot_description" value="false"/>
+    </include>
+
+    <!-- Run the main MoveIt executable without trajectory execution (we do not have controllers configured by default)-->
+    <include file="$(find panda_moveit_config)/launch/move_group.launch">
+        <arg name="allow_trajectory_execution" value="true"/>
+        <arg name="fake_execution" value="false"/>
+        <arg name="info" value="true"/>
+    </include>
+
+    <node name="joint_state_desired_publisher" pkg="topic_tools" type="relay" args="joint_states joint_states_desired" />
+
+    <node pkg="Task12" type="robot_control_node" name="robot_control_node" output="screen" />
+
+    
+  </group>
+
+    <!-- Run Rviz 
+    <arg  name="command_args" value="-d $(find Task12)/config/Task12.rviz" />
+    <node name="$(anon rviz)" pkg="rviz" type="rviz" respawn="false" args="$(arg command_args)" output="screen">
+        <rosparam command="load" file="$(find panda_moveit_config)/config/kinematics.yaml"/>
+    </node>-->
+    
+</launch>
